@@ -7,10 +7,12 @@ var passport = require('passport');
 var session = require('express-session');
 
 var app = express();
+
+app.set('view engine', 'pug');
 require('dotenv').load();
 require('./app/config/passport')(passport);
 
-mongoose.connect(process.env.MONGO_URI);
+mongoose.connect(process.env.MONGO_URI);  //connect to database, use path in .env
 mongoose.Promise = global.Promise;
 
 app.use('/controllers', express.static(process.cwd() + '/app/controllers'));
@@ -23,8 +25,7 @@ app.use(session({
 	saveUninitialized: true
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 routes(app, passport);
 

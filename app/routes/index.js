@@ -6,6 +6,16 @@ var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 
 var Twitter = require("node-twitter-api"); //for twitter login
 
+var cookie = require('cookie');
+
+var http = require('http');
+var url = require('url');
+var homepage = "https://voting-app-waynewilliamson.c9users.io/";
+
+var chartSchema = require('../models/chartSchema'); // import my mongoose schema
+
+
+
 module.exports = function(app) {
 	
     var twitter = new Twitter({
@@ -20,26 +30,69 @@ module.exports = function(app) {
              "displayName": ""
             };
 
-//module.exports = function (app, passport) {
-
 	var newrequestSecret;  // secret passsed back from twitter
-
-
 	var clickHandler = new ClickHandler();
 
 	app.route('/')
 		.get(function (req, res) {
-			res.sendFile(path + '/public/login.html');
+		        res.render('index', {name : twitUser} );  //send to be rendered bu pug
+		});
+		
+	app.route('/newpolls')
+		.get(function (req, res) {
+		    if (twitUser.id.length !== 0) {
+		        res.render('newpolls', {name : twitUser} );  //send to be rendered bu pug
+		        // i need to get this out of this file!!!! its getting messy
+		        var newChart = new chartSchema() ;
+		            newChart.id = twitUser.id;
+                    newChart.date =  Date();
+                    newChart.title = "a lovely chart";
+                    newChart.options = {"key1" : "keys!"};
+                    
+                    
+                    	newChart.save(function (err) {
+						if (err) {
+							throw err;
+						}
+                        console.log("saved to DB");
+					});
+
+		        
+		        
+		        
+		    } else {
+		        res.redirect(homepage);
+		    }
+		        
+		});
+	
+	app.route('/mypolls')
+		.get(function (req, res) {
+		     if (twitUser.id.length !== 0) {
+		        res.render('mypolls', {name : twitUser} );  //send to be rendered bu pug
+		     } else {
+		        res.redirect(homepage);		         
+		     }
 		});
 
-	app.route('/login')
+	app.route('/login')  //no longer needed - all handled in a pug file now
 		.get(function (req, res) {
 			res.sendFile(path + '/public/login.html');
 		});
 		
+	
+    app.route('/logout')
+    	.get(function (req, res) {
+    	    twitUser = {"id": "" ,   //clear the details
+             "token": "",
+            "username": "",   
+             "displayName": ""
+            };
+		res.redirect(homepage); //redirect back to home page //going to refresh whole page though - more database reads?!
+		});
+		
+		
     app.get('/auth/twitter/callback', function (req, res) {  //once its passed to twitter recieve callback with oauth_token and auth_verifier
-            console.log(req.originalUrl);
-            console.log("does this work" + req.query.oauth_verifier) //yes it does!
             var oauth_token = (req.query.oauth_token);  //easier way? ()
             var oauth_verifier = req.query.oauth_verifier;
             
@@ -51,20 +104,16 @@ module.exports = function(app) {
                     if (err)
                         res.status(500).send(err);
                     else
-                        //res.send(user);
+                        console.log(user); //store the details we need
                         twitUser.id = user.id;
                         twitUser.token = accessToken;
-                        twitUser.Username =  user.screen_Name;
+                        twitUser.username =  user.screen_name;
                         twitUser.displayName= user.name;
-                        res.send(twitUser);
-                        
-
-                });
+                        console.log(twitUser);  //just so i can see the output for now
+                        res.redirect(homepage); //redirect back to home page
+                    });
         });
     });
-
-        
-
 
     app.get("/auth/twitter", function(req, res) {  //requet a token and store
         twitter.getRequestToken(function(err, requestToken, requestSecret) {

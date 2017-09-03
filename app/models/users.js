@@ -15,4 +15,12 @@ var User = new Schema({
    }
 });
 
+var chartSchema = mongoose.Schema({
+    id: String,
+    date : Date,
+    title: String,
+    options : Object
+});
+
 module.exports = mongoose.model('User', User);
+module.exports = mongoose.model("chartSchema" , chartSchema);
