@@ -3,6 +3,11 @@ extends layout.pug
 block content
     .container
     
-        p hello
-        h1 content
+        h1 Below are the polls
         
+        ul
+        each val, index in charts
+
+            a(href= "https://voting-app-waynewilliamson.c9users.io/chart/" + val._id ) 
+                li.list-group-item= val.title 
+

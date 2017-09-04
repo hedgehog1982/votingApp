@@ -1,0 +1,24 @@
+extends layout.pug
+
+block content
+
+    .container
+        .row
+            .col
+                form(id='form', action='/submitchart')
+                | Please Enter Your Chart Title:
+                br
+                input(type='text', name='chartTitle', placeholder='Enter a title', id='chartTitle' required='')
+                br
+                |   Please Enter Field Names seperated with a new line, Enter at least Two
+                br
+                textarea(type='text', name='pieSections', id="pieSections",  size='500', placeholder="Enter at least 2 Values seperated by new lines",  rows='8', pattern='([a-zA-z](\n)[a-zA-Z])', required='') 
+                br
+                br
+                input(id="submit" type='submit', value='Submit')
+            .col
+                #piechart(style='width: 500px; height: 500px;')
+    
+
+        
+

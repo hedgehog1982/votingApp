@@ -2,17 +2,15 @@
 
 var path = process.cwd();
 var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
+var mongoose = require('mongoose');
 
 
 var Twitter = require("node-twitter-api"); //for twitter login
 
-var cookie = require('cookie');
 
-var http = require('http');
-var url = require('url');
 var homepage = "https://voting-app-waynewilliamson.c9users.io/";
 
-var chartSchema = require('../models/chartSchema'); // import my mongoose schema
+var chartSchema = require('../models/users'); // import my mongoose schema
 
 
 
@@ -32,34 +30,51 @@ module.exports = function(app) {
 
 	var newrequestSecret;  // secret passsed back from twitter
 	var clickHandler = new ClickHandler();
+	
+	function displayIndex(req, res, next){
+	    		   console.log("should be 1st");
+		        //res.render('layout', {name : twitUser} );  //send to be rendered bu pug
+		        next();
+	}
+	
+	function displayChart(req, res, next){
+	                console.log(" shoud be second");
+	    		chartSchema.find( function (err, allCharts) { // search for all charts and just dump it into console log for now (to be reversed and then passed intp pug for display)
+                    if (err) return console.error(err);
+                console.log(allCharts.reverse());
+                 res.render('index', {name : twitUser, charts : allCharts.reverse()});
+                 next();
+                });       
+                
+	  
+	}
 
-	app.route('/')
-		.get(function (req, res) {
-		        res.render('index', {name : twitUser} );  //send to be rendered bu pug
-		});
+	app.get('/', displayIndex,  displayChart);
+	
+	
+
 		
 	app.route('/newpolls')
 		.get(function (req, res) {
 		    if (twitUser.id.length !== 0) {
-		        res.render('newpolls', {name : twitUser} );  //send to be rendered bu pug
+		        res.render('chartInput', {name : twitUser} );  //send to be rendered bu pug
 		        // i need to get this out of this file!!!! its getting messy
-		        var newChart = new chartSchema() ;
+		        /*
+		        var newChart = new chartSchema() ;  //create our new chart
 		            newChart.id = twitUser.id;
                     newChart.date =  Date();
                     newChart.title = "a lovely chart";
-                    newChart.options = {"key1" : "keys!"};
+                    newChart.options = {"key1" : "keys!", "key2": "another KEY!"};
                     
                     
-                    	newChart.save(function (err) {
+                    newChart.save(function (err) { //save our new chart
 						if (err) {
 							throw err;
 						}
                         console.log("saved to DB");
 					});
-
-		        
-		        
-		        
+				*/
+					
 		    } else {
 		        res.redirect(homepage);
 		    }
@@ -68,8 +83,15 @@ module.exports = function(app) {
 	
 	app.route('/mypolls')
 		.get(function (req, res) {
+		    
 		     if (twitUser.id.length !== 0) {
 		        res.render('mypolls', {name : twitUser} );  //send to be rendered bu pug
+		        
+		        chartSchema.find({ date: "2017-09-03T10:26:58.000Z" }, function (err, allCharts) { // search for all charts and just dump it into console log for now
+                     if (err) return console.error(err);
+                console.log(allCharts);
+                });
+                
 		     } else {
 		        res.redirect(homepage);		         
 		     }
@@ -89,6 +111,15 @@ module.exports = function(app) {
              "displayName": ""
             };
 		res.redirect(homepage); //redirect back to home page //going to refresh whole page though - more database reads?!
+		});
+		
+    app.route("/remove")  //temp so I can clear stuff
+        	.get(function (req, res) {
+                 chartSchema.remove({}, function(err) { 
+                     if (err) console.log("brokered");
+                        console.log('collection removed'); 
+                });
+		res.send("DELETED"); //redirect back to home page //going to refresh whole page though - more database reads?!
 		});
 		
 		
@@ -127,6 +158,17 @@ module.exports = function(app) {
             }
         });
     });
+    
+app.use("/chart", function(req, res, next){
+      console.log(req.path);
+      chartSchema.find({ _id: req.path.replace("/", "") }, function (err, allCharts) { // TEMPORARY 
+                           if (err) {
+                               res.send("not Found on Database");  //try to access chart that does not exist
+                               return console.error("not Found");  //needs a proper error page that is not nice
+                           }
+        res.send(allCharts);  //else display a chart
+      });
+});
 
 
 
