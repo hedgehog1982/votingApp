@@ -8,7 +8,7 @@ block content
                 form(id='form', action='/submitchart')
                 | Please Enter Your Chart Title:
                 br
-                input(type='text', name='chartTitle', placeholder='Enter a title', id='chartTitle' required='')
+                input(type='text', name='chartTitle', placeholder='Enter a title', id='chartTitle', pattern='[a-zA-z0-9]{3}', required='')
                 br
                 |   Please Enter Field Names seperated with a new line, Enter at least Two
                 br

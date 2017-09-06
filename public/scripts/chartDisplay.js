@@ -10,9 +10,7 @@
        var datavalues = $("#pieSections").val().split('\n').filter(function(entry) { //read in data ignore spaces
             return entry.trim() != '';
             });
-       
-
-    
+      
         for (var i=0 ; i < datavalues.length; i++){
              newArray.push([datavalues[i] , 1]);  //push with a value of one to display the chart
         }
@@ -45,11 +43,13 @@
             ; //read in from text area
         console.log("data in text field is ", datavalues)
         
-        if ($("#chartTitle").val().length === 0  ){
-              console.log("lenght is ", datavalues.length);
+        if ($("#chartTitle").val().length === 0  ){  //this does not capture blank titles need regex!
+              console.log("lentht is ", datavalues.length);
               window.alert("No Chart Title Entered");  //swap this for bootstrap warning
+              } else if (datavalues.length < 2) {
+                window.alert("Not enough field Names Entered"); 
               } else {
-                
+                                  window.alert("Passed the right variables..  would submit to database if it was set up"); 
               }
      });
 

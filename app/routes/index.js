@@ -22,18 +22,13 @@ module.exports = function(app) {
     	callback: process.env.TWITCALLBACK
     });
     
-    var twitUser = {"id": "" ,   //twitter id       //for my user to be storeed
-             "token": "",
-            "username": "",   
-             "displayName": ""
-            };
 
 	var newrequestSecret;  // secret passsed back from twitter
 	var clickHandler = new ClickHandler();
 	
 	function displayIndex(req, res, next){
 	    		   console.log("should be 1st");
-		        //res.render('layout', {name : twitUser} );  //send to be rendered bu pug
+
 		        next();
 	}
 	
@@ -42,13 +37,26 @@ module.exports = function(app) {
 	    		chartSchema.find( function (err, allCharts) { // search for all charts and just dump it into console log for now (to be reversed and then passed intp pug for display)
                     if (err) return console.error(err);
                 console.log(allCharts.reverse());
-                 res.render('index', {name : twitUser, charts : allCharts.reverse()});
+                 res.render('index', {name : req.session.twitUser, charts : allCharts.reverse()});
                  next();
                 });       
                 
 	  
 	}
 
+	app.use(function(req, res, next){  //need to use r
+            console.log("in this route" ,req.session.twitUser);
+            if (req.session.twitUser === undefined){
+            req.session.twitUser = {"id": "" ,   //twitter id       //for my user to be storeed
+             "token": "",
+            "username": "",   
+             "displayName": ""
+            };
+            }
+            next();
+            });
+	
+	
 	app.get('/', displayIndex,  displayChart);
 	
 	
@@ -56,8 +64,8 @@ module.exports = function(app) {
 		
 	app.route('/newpolls')
 		.get(function (req, res) {
-		    if (twitUser.id.length !== 0) {
-		        res.render('chartInput', {name : twitUser} );  //send to be rendered bu pug
+		    if (req.session.twitUser.id.length !== 0) {
+		        res.render('chartInput', {name : req.session.twitUser} );  //send to be rendered bu pug
 		        // i need to get this out of this file!!!! its getting messy
 		        /*
 		        var newChart = new chartSchema() ;  //create our new chart
@@ -84,8 +92,8 @@ module.exports = function(app) {
 	app.route('/mypolls')
 		.get(function (req, res) {
 		    
-		     if (twitUser.id.length !== 0) {
-		        res.render('mypolls', {name : twitUser} );  //send to be rendered bu pug
+		     if (req.session.twitUser.id.length !== 0) {
+		        res.render('mypolls', {name : req.session.twitUser} );  //send to be rendered bu pug
 		        
 		        chartSchema.find({ date: "2017-09-03T10:26:58.000Z" }, function (err, allCharts) { // search for all charts and just dump it into console log for now
                      if (err) return console.error(err);
@@ -105,7 +113,7 @@ module.exports = function(app) {
 	
     app.route('/logout')
     	.get(function (req, res) {
-    	    twitUser = {"id": "" ,   //clear the details
+    	    req.session.twitUser = {"id": "" ,   //clear the details
              "token": "",
             "username": "",   
              "displayName": ""
@@ -136,12 +144,13 @@ module.exports = function(app) {
                         res.status(500).send(err);
                     else
                         console.log(user); //store the details we need
-                        twitUser.id = user.id;
-                        twitUser.token = accessToken;
-                        twitUser.username =  user.screen_name;
-                        twitUser.displayName= user.name;
-                        console.log(twitUser);  //just so i can see the output for now
+                        req.session.twitUser.id = user.id;
+                        req.session.twitUser.token = accessToken;
+                        req.session.twitUser.username =  user.screen_name;
+                        req.session.twitUser.displayName= user.name;
+                        console.log(req.session.twitUser);  //just so i can see the output for now
                         res.redirect(homepage); //redirect back to home page
+                
                     });
         });
     });
