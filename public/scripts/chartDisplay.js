@@ -2,27 +2,39 @@
 /*global $*/
 var chartData =[];
 var chartKeys =[];
-var chartTitle = "LOADING>>>>>"
-var newArray = [["Selection", "People"]];
-    
+var chartTitle = "LOADING>>>>>"  //set these up while we wait for data
+const defaultArray = ["Selection", "People"];  //   <-- do i even need this header?
+
+
       google.charts.load('current', {'packages':['corechart']});  //for external google chart
       google.charts.setOnLoadCallback(drawChart);
 
       function drawChart() {
+         var newArray =[]
+        newArray.push(defaultArray);
 
-      console.log("data is ", newArray);
-      console.log(chartTitle)
-         
+            for (var i=0 ; i < chartKeys.length; i++){
+               newArray.push([chartKeys[i][0] ,parseInt(chartKeys[i][1])]);  //need to pass as numbers or it gets grumpy
+             }
+            
+          
+          
         var data = google.visualization.arrayToDataTable(newArray);
-
-        var options = {chartTitle};  //for the chart title
-        
+        var options = {title: chartTitle , sliceVisibilityThreshold:0};  //for the chart title and to ensure slices appear even if they have no votes
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
-
         chart.draw(data, options);
       }
       
-
+      function addToSelect(){   //add chart options into chart
+          $.each(chartKeys, function (i, item) {  //for all chart keys
+             $('#dropD').append($('<option>', { 
+                value : item[0],
+                text : item[0]
+             }));
+        });
+          
+          
+      }
       
   $(document).ready(function() {   // right, im going to update the chart as we go. wont that be fancy......
   
@@ -30,17 +42,33 @@ var newArray = [["Selection", "People"]];
     
     $.get("https://voting-app-waynewilliamson.c9users.io/data/chart/" + chartNumber, function( data ) {
             chartData = data[0];
-            chartKeys = Object.keys(chartData.options).map(function (key){
-                return [key , chartData.options[key]];
+            chartKeys = Object.keys(chartData.options).map(function (key){ //converyy object to arra
+            return [key , chartData.options[key]];
             })
-            console.log("chart keys are ", chartKeys);
+            //console.log("chart keys are ", chartKeys);
             chartTitle = chartData.title;
-                   for (var i=0 ; i < chartKeys.length; i++){
-            newArray.push([chartKeys[i][0] ,parseInt(chartKeys[i][1])]);  //concat should work ? but flattening
-        }
             
-            drawChart();
+
+             
+         addToSelect();
+         drawChart();
         });
+        
+    $( "#dropD" ).change(function() {
+            console.log("this has fired ", this.value);
+            console.log("chartdata is ",chartData.options[this.value])
+            chartData.options[this.value] ++ //mutating the original data really shouldnt be done,,,,
+            
+            chartKeys = Object.keys(chartData.options).map(function (key){ // used this code twice > in a function probs best?
+                    return [key , chartData.options[key]];
+            })
+            drawChart();
+            chartData.options[this.value] --  //put it back to what it was for now
+
+        });
+
+
+
 
     
 

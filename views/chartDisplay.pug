@@ -1,9 +1,17 @@
 extends layout.pug
+block scripts
+
+    script(src='/public/scripts/chartDisplay.js')
 
 block content
 
     .container
         .row
+            .col
+                form
+                    select(id='dropD', name='vote')
+                    input(type='submit', value='Submit')
+
             .col
                 #piechart(style='width: 500px; height: 500px;')
     
