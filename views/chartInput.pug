@@ -1,11 +1,12 @@
 extends layout.pug
 
+
 block content
 
     .container
         .row
             .col
-                form(id='form', action='/submitchart')
+                form(method="post", id='form', action='/makeChart')
                 | Please Enter Your Chart Title:
                 br
                 input(type='text', name='chartTitle', placeholder='Enter a title', id='chartTitle', pattern='[a-zA-z0-9]{3}', required='')

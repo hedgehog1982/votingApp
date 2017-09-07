@@ -25,8 +25,6 @@ app.use(session({
 	saveUninitialized: true
 }));
 
-
-
 routes(app, passport);
 
 var port = process.env.PORT || 8080;

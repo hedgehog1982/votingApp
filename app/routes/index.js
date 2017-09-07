@@ -1,18 +1,16 @@
-'use strict';
+'use strict';  //messy messy file should not all be in here.....
 
 var path = process.cwd();
 var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 var mongoose = require('mongoose');
 
-
 var Twitter = require("node-twitter-api"); //for twitter login
-
 
 var homepage = "https://voting-app-waynewilliamson.c9users.io/";
 
 var chartSchema = require('../models/users'); // import my mongoose schema
 
-
+var bodyParser = require('body-parser'); // to get data from POST file
 
 module.exports = function(app) {
 	
@@ -26,28 +24,28 @@ module.exports = function(app) {
 	var newrequestSecret;  // secret passsed back from twitter
 	var clickHandler = new ClickHandler();
 	
-	function displayIndex(req, res, next){
-	    		   console.log("should be 1st");
-
+	function displayIndex(req, res, next){  //not really needing this at mo
 		        next();
 	}
 	
 	function displayChart(req, res, next){
-	                console.log(" shoud be second");
 	    		chartSchema.find( function (err, allCharts) { // search for all charts and just dump it into console log for now (to be reversed and then passed intp pug for display)
                     if (err) return console.error(err);
                 console.log(allCharts.reverse());
-                 res.render('index', {name : req.session.twitUser, charts : allCharts.reverse()});
+                 res.render('index', {name : req.session.twitUser, charts : allCharts.reverse()});  //throwing an error until charts is populated.
                  next();
                 });       
-                
-	  
-	}
+                	}
+    app.use(bodyParser.json()); //to get data from POST file
 
-	app.use(function(req, res, next){  //need to use r
-            console.log("in this route" ,req.session.twitUser);
-            if (req.session.twitUser === undefined){
-            req.session.twitUser = {"id": "" ,   //twitter id       //for my user to be storeed
+    
+    app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+        extended: true
+    })); 
+
+	app.use(function(req, res, next){  //needed to have individual users.
+            if (req.session.twitUser === undefined){  //if no stored session data
+            req.session.twitUser = {"id": "" ,   //twitter id       
              "token": "",
             "username": "",   
              "displayName": ""
@@ -57,32 +55,13 @@ module.exports = function(app) {
             });
 	
 	
-	app.get('/', displayIndex,  displayChart);
-	
-	
-
+	app.get('/', displayIndex,  displayChart);  //display index and read charts. while this is a small amount of data this will work fine... not so much after
 		
 	app.route('/newpolls')
 		.get(function (req, res) {
 		    if (req.session.twitUser.id.length !== 0) {
 		        res.render('chartInput', {name : req.session.twitUser} );  //send to be rendered bu pug
-		        // i need to get this out of this file!!!! its getting messy
-		        /*
-		        var newChart = new chartSchema() ;  //create our new chart
-		            newChart.id = twitUser.id;
-                    newChart.date =  Date();
-                    newChart.title = "a lovely chart";
-                    newChart.options = {"key1" : "keys!", "key2": "another KEY!"};
-                    
-                    
-                    newChart.save(function (err) { //save our new chart
-						if (err) {
-							throw err;
-						}
-                        console.log("saved to DB");
-					});
-				*/
-					
+
 		    } else {
 		        res.redirect(homepage);
 		    }
@@ -96,8 +75,8 @@ module.exports = function(app) {
 		        res.render('mypolls', {name : req.session.twitUser} );  //send to be rendered bu pug
 		        
 		        chartSchema.find({ date: "2017-09-03T10:26:58.000Z" }, function (err, allCharts) { // search for all charts and just dump it into console log for now
-                     if (err) return console.error(err);
-                console.log(allCharts);
+                if (err) return console.error(err);
+                    console.log(allCharts);
                 });
                 
 		     } else {
@@ -109,7 +88,6 @@ module.exports = function(app) {
 		.get(function (req, res) {
 			res.sendFile(path + '/public/login.html');
 		});
-		
 	
     app.route('/logout')
     	.get(function (req, res) {
@@ -120,6 +98,36 @@ module.exports = function(app) {
             };
 		res.redirect(homepage); //redirect back to home page //going to refresh whole page though - more database reads?!
 		});
+		
+	app.route("/makeChart")
+	    .post(function(req, res, next) {
+            console.log("recieved a post from front end");  //how do I pass this in?!
+            console.log(req.body);
+            console.log("chart key zero is " ,req.body.chartKey[0]);
+            console.log("length", req.body.chartKey.length)
+            
+            var chartKeys ={};   //blank chart keys for chart
+            for (var i = 0; i <req.body.chartKey.length; i++){
+                var currentKey = req.body.chartKey[i];
+                console.log(currentKey);
+                chartKeys[currentKey] ="0";
+            }
+            
+            console.log("My Chart Keys are", chartKeys);
+            
+             var newChart = new chartSchema() ;  //create our new chart
+		            newChart.id = req.session.twitUser.id;
+                    newChart.date =  Date();
+                    newChart.title = req.body.title;
+                    newChart.options = chartKeys;
+                    newChart.save(function (err) { //save our new chart
+						if (err) {
+							throw err;
+						}
+                        console.log("saved to DB");
+					});
+            res.send("ADDED (well not yet but lets pretend)");   //
+        });
 		
     app.route("/remove")  //temp so I can clear stuff
         	.get(function (req, res) {
@@ -143,16 +151,15 @@ module.exports = function(app) {
                     if (err)
                         res.status(500).send(err);
                     else
-                        console.log(user); //store the details we need
+                        //console.log(user); //store the details we need
                         req.session.twitUser.id = user.id;
                         req.session.twitUser.token = accessToken;
                         req.session.twitUser.username =  user.screen_name;
                         req.session.twitUser.displayName= user.name;
                         console.log(req.session.twitUser);  //just so i can see the output for now
                         res.redirect(homepage); //redirect back to home page
-                
                     });
-        });
+            });
     });
 
     app.get("/auth/twitter", function(req, res) {  //requet a token and store
@@ -168,29 +175,28 @@ module.exports = function(app) {
         });
     });
     
-app.use("/chart", function(req, res, next){
-      console.log(req.path);
-      chartSchema.find({ _id: req.path.replace("/", "") }, function (err, allCharts) { // TEMPORARY 
+    app.use("/data/chart", function(req, res, next){
+         console.log(req.path);
+            chartSchema.find({ _id: req.path.replace("/", "") }, function (err, allCharts) { // TEMPORARY 
                            if (err) {
                                res.send("not Found on Database");  //try to access chart that does not exist
                                return console.error("not Found");  //needs a proper error page that is not nice
                            }
-        res.send(allCharts);  //else display a chart
-      });
-});
+            res.send(allCharts);  //else display chart data
+         });
+    });
+    
+
+    
+        app.use("/chart", function(req, res, next){
+         console.log(req.path);
+            res.render('chartDisplay', {name : req.session.twitUser}); 
+         });
+         
 
 
 
-//	app.route('/auth/github')
-//		.get(passport.authenticate('github'));
-//
-//	app.route('/auth/github/callback')
-//		.get(passport.authenticate('github', {
-//			successRedirect: '/',
-//			failureRedirect: '/login'
-//		}));
-//
+
+
 
 };
-
-//};
