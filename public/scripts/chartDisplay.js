@@ -1,9 +1,10 @@
 /*global google*/
 /*global $*/
+var thisIp;
 var chartData =[];
 var chartKeys =[];
-var chartTitle = "LOADING>>>>>"  //set these up while we wait for data
-const defaultArray = ["Selection", "People"];  //   <-- do i even need this header?
+var chartTitle = "LOADING>>>>>";  //set these up while we wait for data
+//const defaultArray = ["Selection", "People"];  //   <-- do i even need this header?
 
 
       google.charts.load('current', {'packages':['corechart']});  //for external google chart
@@ -11,14 +12,12 @@ const defaultArray = ["Selection", "People"];  //   <-- do i even need this head
 
       function drawChart() {
          var newArray =[]
-        newArray.push(defaultArray);
+        //newArray.push(defaultArray);
 
             for (var i=0 ; i < chartKeys.length; i++){
-               newArray.push([chartKeys[i][0] ,parseInt(chartKeys[i][1])]);  //need to pass as numbers or it gets grumpy
+               newArray.push([chartKeys[i][0] ,(chartKeys[i][1])]);  //changed on back end so parseint no longer needed
              }
-            
-          
-          
+
         var data = google.visualization.arrayToDataTable(newArray);
         var options = {title: chartTitle , sliceVisibilityThreshold:0};  //for the chart title and to ensure slices appear even if they have no votes
         var chart = new google.visualization.PieChart(document.getElementById('piechart'));
@@ -27,10 +26,13 @@ const defaultArray = ["Selection", "People"];  //   <-- do i even need this head
       
       function addToSelect(){   //add chart options into chart
           $.each(chartKeys, function (i, item) {  //for all chart keys
-             $('#dropD').append($('<option>', { 
-                value : item[0],
-                text : item[0]
-             }));
+
+                if (item[0] !== "Selection"){  //dont include the table headers
+                    $('#dropD').append($('<option>', { 
+                    value : item[0],
+                    text : item[0]
+                    }));
+                }
         });
           
           
@@ -40,25 +42,25 @@ const defaultArray = ["Selection", "People"];  //   <-- do i even need this head
   
     var chartNumber = window.location.pathname.split("/chart/").pop();
     
+        $.getJSON("https://jsonip.com/?callback=?", function (data) {
+        console.log(data);
+        thisIp = data.ip;
+         });
+    
     $.get("https://voting-app-waynewilliamson.c9users.io/data/chart/" + chartNumber, function( data ) {
             chartData = data[0];
             chartKeys = Object.keys(chartData.options).map(function (key){ //converyy object to arra
             return [key , chartData.options[key]];
             })
-            //console.log("chart keys are ", chartKeys);
-            chartTitle = chartData.title;
-            
-
-             
-         addToSelect();
-         drawChart();
+            chartTitle = chartData.title; // chartTitle is
+            addToSelect();  // opulate our dropdown box
+             drawChart();  //update chart
         });
         
     $( "#dropD" ).change(function() {
             console.log("this has fired ", this.value);
             console.log("chartdata is ",chartData.options[this.value])
             chartData.options[this.value] ++ //mutating the original data really shouldnt be done,,,,
-            
             chartKeys = Object.keys(chartData.options).map(function (key){ // used this code twice > in a function probs best?
                     return [key , chartData.options[key]];
             })
@@ -67,47 +69,21 @@ const defaultArray = ["Selection", "People"];  //   <-- do i even need this head
 
         });
 
-
-
-
-    
-
-    /*$('#chartTitle').keyup(function(){
-    (drawChart());  // if we type anything in the fields we update the pie chart!
-    });
-    
-     $('#pieSections').keyup(function(){
-       drawChart();
-       });
-   
      $("#submit").click(function(event) {   //data checking! is it valid? is it enough?
        event.preventDefault(); //needed to stop html button deafult i think
-        var datavalues = $("#pieSections").val().split('\n').filter(function(entry) { 
-            return entry.trim() != '';
-            });
-            ; //read in from text area
-        console.log("data in text field is ", datavalues)
-        
-        if ($("#chartTitle").val().length === 0 ){  //this does not capture blank titles need regex! check we have data.
-              console.log("length is ", datavalues.length);
-              window.alert("No Chart Title Entered");  //swap this for bootstrap warning
-              } else if (datavalues.length < 2) {
-                window.alert("Not enough field Names Entered"); 
-              } else {
-                console.log("posting");
-                
-                $.post("/makeChart", {
-                    title : $("#chartTitle").val(),  //title pulled in through J Query
-                    chartKey : datavalues            //object of 
-                    }
-                    
-                    
-              );
-              }
-                
-              
+       
+       
+            console.log("Current dropdown is " , $("#dropD").val());
+            console.log("IP address is", thisIp);
+            // what i want to do next
+            
+                        //send id , what was selected and value +1 + ip
+                        //remove dropdown
+                        //extend chart
+                        //marvel in the beauty of it all
+            
      });
-     */
+     
 
     
     

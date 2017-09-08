@@ -106,20 +106,21 @@ module.exports = function(app) {
             console.log("chart key zero is " ,req.body.chartKey[0]);
             console.log("length", req.body.chartKey.length)
             
-            var chartKeys ={};   //blank chart keys for chart
+            var chartKeys ={"Selection" : "People"};   //Add headers here to stop the faff later
+            
             for (var i = 0; i <req.body.chartKey.length; i++){
                 var currentKey = req.body.chartKey[i];
                 console.log(currentKey);
-                chartKeys[currentKey] ="0";
+                chartKeys[currentKey] = 0;    //pass this as an integer so I dont have to swap it later
             }
             
             console.log("My Chart Keys are", chartKeys);
             
              var newChart = new chartSchema() ;  //create our new chart
-		            newChart.id = req.session.twitUser.id;
-                    newChart.date =  Date();
-                    newChart.title = req.body.title;
-                    newChart.options = chartKeys;
+		            newChart.id = req.session.twitUser.id;  //who created it
+                    newChart.date =  Date();                //when it was created
+                    newChart.title = req.body.title;        //title of chart
+                    newChart.options = chartKeys;           //data points
                     newChart.save(function (err) { //save our new chart
 						if (err) {
 							throw err;
