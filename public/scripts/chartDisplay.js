@@ -73,8 +73,16 @@ var chartTitle = "LOADING>>>>>";  //set these up while we wait for data
        event.preventDefault(); //needed to stop html button deafult i think
        
        
-            console.log("Current dropdown is " , $("#dropD").val());
+            console.log("Current dropdown is " ,$("#dropD").val() );
             console.log("IP address is", thisIp);
+             $.post("/updateChart", { 
+                 
+                _id : chartData._id,
+               // ip : chartData.ip.push(thisIp),  // what if someone else updates at a similiar time this break stuff....
+               // chartKey :chartData.options
+                ip : thisIp,
+                selected : $("#dropD").val()
+                    })
             // what i want to do next
             
                         //send id , what was selected and value +1 + ip

@@ -101,11 +101,7 @@ module.exports = function(app) {
 		
 	app.route("/makeChart")
 	    .post(function(req, res, next) {
-            console.log("recieved a post from front end");  //how do I pass this in?!
-            console.log(req.body);
-            console.log("chart key zero is " ,req.body.chartKey[0]);
-            console.log("length", req.body.chartKey.length)
-            
+            console.log("recieved a post from front end to make new");  //how do I pass this in?!
             var chartKeys ={"Selection" : "People"};   //Add headers here to stop the faff later
             
             for (var i = 0; i <req.body.chartKey.length; i++){
@@ -121,6 +117,7 @@ module.exports = function(app) {
                     newChart.date =  Date();                //when it was created
                     newChart.title = req.body.title;        //title of chart
                     newChart.options = chartKeys;           //data points
+                    newChart.ip = ["0.0.0.0"]                      //keep track of who has filled it in
                     newChart.save(function (err) { //save our new chart
 						if (err) {
 							throw err;
@@ -128,6 +125,45 @@ module.exports = function(app) {
                         console.log("saved to DB");
 					});
             res.send("ADDED (well not yet but lets pretend)");   //
+        });
+    
+    app.route("/updateChart")
+        .post(function(req, res, next){
+            console.log("recieved update request")
+            console.log(req.body);
+            var updating =  "options." +req.body.selected ;
+            var ipvalue = [req.body.ip];
+            console.log("value to push is ", ipvalue);
+            
+                chartSchema.update(  //increment
+                    {_id : req.body._id}, 
+                        {$inc : {
+                        [updating] : 1  //square brackets to use as variable
+                                }
+                        }
+                        , function(err, doc){
+                         if(err){
+                        console.log("Something wrong when updating data!", err ,doc);
+
+                         }
+            //recieved for update
+            })
+            
+                chartSchema.update(  //add ip (cant do this in one go as gets grumpy)
+                    {_id : req.body._id}, 
+                        {$push : {
+                            ip: [ipvalue]
+                            
+                         }    
+                        }
+                        , function(err, doc){
+                         if(err){
+                        console.log("Something wrong when updating data!", err ,doc);
+
+                         }
+            //recieved for update
+            })
+            
         });
 		
     app.route("/remove")  //temp so I can clear stuff
@@ -187,12 +223,10 @@ module.exports = function(app) {
          });
     });
     
-
-    
-        app.use("/chart", function(req, res, next){
+    app.use("/chart", function(req, res, next){
          console.log(req.path);
-            res.render('chartDisplay', {name : req.session.twitUser}); 
-         });
+        res.render('chartDisplay', {name : req.session.twitUser}); 
+    });
          
 
 

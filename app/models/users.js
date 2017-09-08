@@ -19,7 +19,8 @@ var chartSchema = mongoose.Schema({
     id: String,
     date : Date,
     title: String,
-    options : Object
+    options : Object,
+    ip : [{ type : String }]
 });
 
 module.exports = mongoose.model('User', User);
