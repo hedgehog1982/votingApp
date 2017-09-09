@@ -117,17 +117,20 @@ module.exports = function(app) {
                     newChart.date =  Date();                //when it was created
                     newChart.title = req.body.title;        //title of chart
                     newChart.options = chartKeys;           //data points
-                    newChart.ip = ["0.0.0.0"]                      //keep track of who has filled it in
-                    newChart.save(function (err) { //save our new chart
+                    newChart.ip = ["0.0.0.0"]     ;                 //keep track of who has filled it in
+                    newChart.save(function (err, data) { //save our new chart
 						if (err) {
 							throw err;
 						}
-                        console.log("saved to DB");
+                        console.log("saved to DB", data._id);
+                        res.redirect("/data/chart/" + data._id);
 					});
-            res.send("ADDED (well not yet but lets pretend)");   //
+					
+
+
         });
     
-    app.route("/updateChart")
+    app.route("/updateChart")  //check is logged in!
         .post(function(req, res, next){
             console.log("recieved update request")
             console.log(req.body);
@@ -153,7 +156,6 @@ module.exports = function(app) {
                     {_id : req.body._id}, 
                         {$push : {
                             ip: [ipvalue]
-                            
                          }    
                         }
                         , function(err, doc){
@@ -212,14 +214,15 @@ module.exports = function(app) {
         });
     });
     
-    app.use("/data/chart", function(req, res, next){
-         console.log(req.path);
-            chartSchema.find({ _id: req.path.replace("/", "") }, function (err, allCharts) { // TEMPORARY 
+    app.use("/data/chart", function(req, res){  //should be app.get? think i'm calling it wrong from jquery just calling a page rather than page,data? TO FIX
+        console.log("reading from Databas")
+            chartSchema.find({ _id: req.path.replace("/", "") } ,"_id title options", function (err, allCharts) { // TEMPORARY 
                            if (err) {
                                res.send("not Found on Database");  //try to access chart that does not exist
                                return console.error("not Found");  //needs a proper error page that is not nice
                            }
-            res.send(allCharts);  //else display chart data
+                          console.log("I am sending the following" , allCharts)
+            res.send(allCharts);  //sending name, options and _id
          });
     });
     
