@@ -7,13 +7,13 @@ block content
 
     .container
         .row
-            .col
+            .col(id='formcol' hidden='')
                 form
                     select(id='dropD', name='vote')
                     input(id="submit", type='submit', value='Submit')
 
-            .col
-                #piechart(style='width: 500px; height: 500px;')
+            .col(id="chartCol")
+                #piechart
     
 
         

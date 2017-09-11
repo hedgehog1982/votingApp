@@ -64,7 +64,8 @@
                     chartKey : uniqueItems           //object of 
                     }
               ).done(function( data ) {
-                    window.location.replace("https://voting-app-waynewilliamson.c9users.io/chart/" + data[0]._id);  //redirect to newly created chart
+                  
+                    window.location.replace("https://voting-app-waynewilliamson.c9users.io/chart/" + data);  //redirect to newly created chart
                 });
               }
                 

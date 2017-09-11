@@ -12,6 +12,10 @@ var chartSchema = require('../models/users'); // import my mongoose schema
 
 var bodyParser = require('body-parser'); // to get data from POST file
 
+var logout = require('../my_modules/logout.js');  //first attempt at external module
+var chartDB = require('../my_modules/chartDB.js');   //for database reads
+
+
 module.exports = function(app) {
 	
     var twitter = new Twitter({
@@ -91,18 +95,18 @@ module.exports = function(app) {
 	
     app.route('/logout')
     	.get(function (req, res) {
-    	    req.session.twitUser = {"id": "" ,   //clear the details
-             "token": "",
-            "username": "",   
-             "displayName": ""
-            };
+    	    logout.logout(req);  //logout function
 		res.redirect(homepage); //redirect back to home page //going to refresh whole page though - more database reads?!
 		});
 		
 	app.route("/makeChart")
 	    .post(function(req, res, next) {
             console.log("recieved a post from front end to make new");  //how do I pass this in?!
-            var chartKeys ={"Selection" : "People"};   //Add headers here to stop the faff later
+            chartDB.makeOne(req, function (data) {
+                res.send(data);
+            }); //make a chart
+
+            /*var chartKeys ={"Selection" : "People"};   //Add headers here to stop the faff later
             
             for (var i = 0; i <req.body.chartKey.length; i++){
                 var currentKey = req.body.chartKey[i];
@@ -123,9 +127,9 @@ module.exports = function(app) {
 							throw err;
 						}
                         console.log("saved to DB", data._id);
-                        res.redirect("/data/chart/" + data._id);
+
 					});
-					
+				*/	
 
 
         });
@@ -135,7 +139,7 @@ module.exports = function(app) {
             console.log("recieved update request")
             console.log(req.body);
             var updating =  "options." +req.body.selected ;
-            var ipvalue = [req.body.ip];
+            var ipvalue = req.headers['x-forwarded-for'];  //store ip
             console.log("value to push is ", ipvalue);
             
                 chartSchema.update(  //increment
@@ -170,10 +174,11 @@ module.exports = function(app) {
 		
     app.route("/remove")  //temp so I can clear stuff
         	.get(function (req, res) {
-                 chartSchema.remove({}, function(err) { 
+        	    chartDB.removeALL(); //remove all of the DB's
+               /*  chartSchema.remove({}, function(err) { 
                      if (err) console.log("brokered");
                         console.log('collection removed'); 
-                });
+                }); */
 		res.send("DELETED"); //redirect back to home page //going to refresh whole page though - more database reads?!
 		});
 		
@@ -214,15 +219,25 @@ module.exports = function(app) {
         });
     });
     
-    app.use("/data/chart", function(req, res){  //should be app.get? think i'm calling it wrong from jquery just calling a page rather than page,data? TO FIX
-        console.log("reading from Databas")
-            chartSchema.find({ _id: req.path.replace("/", "") } ,"_id title options", function (err, allCharts) { // TEMPORARY 
+    app.route("/data/chart")  //setup for generic searches now...  // could add a section for which values i want back but opens up to messing
+        .get(function(req, res){  //proper read
+        var searchKey = Object.keys(req.query);
+        var searchQuery = req.query[searchKey]
+        if (searchQuery==="findME") { searchQuery= req.session.twitUser.id  ;};
+        
+        console.log("searching for ", searchKey, " with a value of ", searchQuery, " searching from ip ", req.headers['x-forwarded-for']);
+        console.log(req.headers['x-forwarded-for'])
+        
+            chartSchema.find({ [searchKey[0]]: searchQuery } ,"_id title options id ip", function (err, allCharts) { // TEMPORARY would like to use this for all....
                            if (err) {
                                res.send("not Found on Database");  //try to access chart that does not exist
                                return console.error("not Found");  //needs a proper error page that is not nice
                            }
+                           if (allCharts[0].ip.indexOf(req.headers['x-forwarded-for']) === -1){
+                               allCharts[0].ip = "Not found";
+                           } else { allCharts[0].ip = "found"; }
                           console.log("I am sending the following" , allCharts)
-            res.send(allCharts);  //sending name, options and _id
+            res.send(allCharts);  //sending name, options and _id twitter id
          });
     });
     

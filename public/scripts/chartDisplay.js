@@ -1,6 +1,5 @@
 /*global google*/
 /*global $*/
-var thisIp;
 var chartData =[];
 var chartKeys =[];
 var chartTitle = "LOADING>>>>>";  //set these up while we wait for data
@@ -9,6 +8,14 @@ var chartTitle = "LOADING>>>>>";  //set these up while we wait for data
 
       google.charts.load('current', {'packages':['corechart']});  //for external google chart
       google.charts.setOnLoadCallback(drawChart);
+      
+      function removeForm(){
+          console.log("removing form");
+          $('#formcol').removeAttr("hidden");
+          $("form").replaceWith("<h1> YOU HAVE VOTED ALREADY AND CAN NOT VOTE AGAIN <h1>");
+
+         // window.alert("You have already have voted already!"); 
+      }
 
       function drawChart() {
          var newArray =[]
@@ -34,28 +41,34 @@ var chartTitle = "LOADING>>>>>";  //set these up while we wait for data
                     }));
                 }
         });
+         $('#formcol').removeAttr("hidden");
           
           
       }
       
   $(document).ready(function() {   // right, im going to update the chart as we go. wont that be fancy......
   
+              $('#formcol').removeClass("hidden").hide();
+  
     var chartNumber = window.location.pathname.split("/chart/").pop();
-    
-        $.getJSON("https://jsonip.com/?callback=?", function (data) {
-        console.log(data);
-        thisIp = data.ip;
-         });
-    
-    $.get("https://voting-app-waynewilliamson.c9users.io/data/chart/" + chartNumber, function( data ) {
+    var getData = { "_id" : chartNumber };
+
+    $.get("https://voting-app-waynewilliamson.c9users.io/data/chart/", getData, function( data ) {
             chartData = data[0];
             chartKeys = Object.keys(chartData.options).map(function (key){ //converyy object to arra
             return [key , chartData.options[key]];
             })
             chartTitle = chartData.title; // chartTitle is
-            addToSelect();  // opulate our dropdown box
+            console.log(chartData.ip[0]);
+            if (chartData.ip[0] !== "found") {
+                    addToSelect();   // populate our dropdown box if the ip has not been used before
+                } else {
+                    removeForm();
+                }
              drawChart();  //update chart
         });
+        
+    
         
     $( "#dropD" ).change(function() {
             console.log("this has fired ", this.value);
@@ -71,16 +84,13 @@ var chartTitle = "LOADING>>>>>";  //set these up while we wait for data
 
      $("#submit").click(function(event) {   //data checking! is it valid? is it enough?
        event.preventDefault(); //needed to stop html button deafult i think
-       
-       
             console.log("Current dropdown is " ,$("#dropD").val() );
-            console.log("IP address is", thisIp);
+
              $.post("/updateChart", { 
                  
                 _id : chartData._id,
                // ip : chartData.ip.push(thisIp),  // what if someone else updates at a similiar time this break stuff....
                // chartKey :chartData.options
-                ip : thisIp,
                 selected : $("#dropD").val()
                     })
             // what i want to do next
