@@ -34,4 +34,18 @@ body {    /*stop navbar hiding content when its collapsed*/
   margin-left : auto;
   margin-right : auto;
 }
+#chartContainer{
+  
+  background-color: #FFF9E3;
+}
 
+/*deleteDIV{
+
+    width: 100%;
+  position :absolute;
+  bottom : 0;
+}
+
+#delete{
+    width: 90%;
+}*/

@@ -4,7 +4,11 @@ block scripts
     script(src='/public/scripts/myPolls.js')
 
 block content
-    .container
+    .container(id="chartContainer" )
     
         h1 MY POLLS
+        div(id="loading") 
+            h2 Loading Please Wait
+        
+        div.pb-2
         

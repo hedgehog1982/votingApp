@@ -35,7 +35,7 @@ module.exports = function(app) {
 	function displayChart(req, res, next){
 	    		chartSchema.find( function (err, allCharts) { // search for all charts and just dump it into console log for now (to be reversed and then passed intp pug for display)
                     if (err) return console.error(err);
-                console.log(allCharts.reverse()); //need to reverse date?
+                console.log(allCharts.reverse());
                  res.render('index', {name : req.session.twitUser, charts : allCharts.reverse()});  //throwing an error until charts is populated.
                  next();
                 });       
@@ -106,23 +106,79 @@ module.exports = function(app) {
                 res.send(data);
             }); //make a chart
 
+            /*var chartKeys ={"Selection" : "People"};   //Add headers here to stop the faff later
+            
+            for (var i = 0; i <req.body.chartKey.length; i++){
+                var currentKey = req.body.chartKey[i];
+                console.log(currentKey);
+                chartKeys[currentKey] = 0;    //pass this as an integer so I dont have to swap it later
+            }
+            
+            console.log("My Chart Keys are", chartKeys);
+            
+             var newChart = new chartSchema() ;  //create our new chart
+		            newChart.id = req.session.twitUser.id;  //who created it
+                    newChart.date =  Date();                //when it was created
+                    newChart.title = req.body.title;        //title of chart
+                    newChart.options = chartKeys;           //data points
+                    newChart.ip = ["0.0.0.0"]     ;                 //keep track of who has filled it in
+                    newChart.save(function (err, data) { //save our new chart
+						if (err) {
+							throw err;
+						}
+                        console.log("saved to DB", data._id);
+
+					});
+				*/	
+
+
         });
     
     app.route("/updateChart")  //check is logged in!
         .post(function(req, res, next){
-            chartDB.updateChart(req);
+            console.log("recieved update request")
+            console.log(req.body);
+            var updating =  "options." +req.body.selected ;
+            var ipvalue = req.headers['x-forwarded-for'];  //store ip
+            console.log("value to push is ", ipvalue);
+            
+                chartSchema.update(  //increment
+                    {_id : req.body._id}, 
+                        {$inc : {
+                        [updating] : 1  //square brackets to use as variable
+                                }
+                        }
+                        , function(err, doc){
+                         if(err){
+                        console.log("Something wrong when updating data!", err ,doc);
+
+                         }
+            //recieved for update
+            })
+            
+                chartSchema.update(  //add ip (cant do this in one go as gets grumpy)
+                    {_id : req.body._id}, 
+                        {$push : {
+                            ip: [ipvalue]
+                         }    
+                        }
+                        , function(err, doc){
+                         if(err){
+                        console.log("Something wrong when updating data!", err ,doc);
+
+                         }
+            //recieved for update
+            })
+            
         });
-        
-     app.route("/removeone")  //temp so I can clear stuff
-        	.post(function (req, res) {
-        chartDB.removeOne(req.body)
-        	    //chartDB.removeALL(); //remove all of the DB's
-		//res.send("DELETED"); //redirect back to home page //going to refresh whole page though - more database reads?!
-		});
-        
+		
     app.route("/remove")  //temp so I can clear stuff
         	.get(function (req, res) {
         	    chartDB.removeALL(); //remove all of the DB's
+               /*  chartSchema.remove({}, function(err) { 
+                     if (err) console.log("brokered");
+                        console.log('collection removed'); 
+                }); */
 		res.send("DELETED"); //redirect back to home page //going to refresh whole page though - more database reads?!
 		});
 		
@@ -163,40 +219,37 @@ module.exports = function(app) {
         });
     });
     
-   app.route("/data/chart")  //setup for generic searches now...  // could add a section for which values i want back but opens up to messing
+    app.route("/data/chart")  //setup for generic searches now...  // could add a section for which values i want back but opens up to messing
         .get(function(req, res){  //proper read
-        chartDB.findChart(req, function(error, data){  
-            if (error){ 
-                console.log("an error! redirecting to error page");
-                res.redirect("/error"); 
-            } else {
-            console.log("recieved")
-             res.send(data);
-            }
+        chartDB.findChart(req, function(data , error){
+            if (error){ res.send(error);}
+            res.send(data);
+            
         });
-
+        
+       /* var searchKey = Object.keys(req.query);
+        var searchQuery = req.query[searchKey]
+        if (searchQuery==="findME") { searchQuery= req.session.twitUser.id  ;};
+        
+        console.log("searching for ", searchKey, " with a value of ", searchQuery, " searching from ip ", req.headers['x-forwarded-for']);
+        console.log(req.headers['x-forwarded-for'])
+        
+            chartSchema.find({ [searchKey[0]]: searchQuery } ,"_id title options id ip", function (err, allCharts) { // TEMPORARY would like to use this for all....
+                           if (err) {
+                               res.send("not Found on Database");  //try to access chart that does not exist
+                               return console.error("not Found");  //needs a proper error page that is not nice
+                           }
+                           if (allCharts[0].ip.indexOf(req.headers['x-forwarded-for']) === -1){
+                               allCharts[0].ip = "Not found";
+                           } else { allCharts[0].ip = "found"; }
+                          console.log("I am sending the following" , allCharts)
+            res.send(allCharts);  //sending name, options and _id twitter id
+         });*/
     });
     
-    app.use("/chart", function(req, res, next){  // need a
-         var searchTerm = {"_id" : req.path.split("/").pop()};
-         chartSchema.find(searchTerm, function (err, allCharts){  // not using my function ?
-            if (err) {
-                console.log("/ chart is  an error")
-                res.redirect("/error"); 
-            } else if (allCharts[0] == undefined){  //
-                console.log("/ chart has been removed", err)
-                res.redirect("/error"); 
-            } else {
-                console.log("/ chart is not an error", allCharts[0]);
-              res.render('chartDisplay', {name : req.session.twitUser}); 
-            }
-        })
-
-    });
-    
-    app.use("/error", function(req, res, next){  // need an error page here
+    app.use("/chart", function(req, res, next){
          console.log(req.path);
-        res.render('error', {name : req.session.twitUser}); 
+        res.render('chartDisplay', {name : req.session.twitUser}); 
     });
          
 };

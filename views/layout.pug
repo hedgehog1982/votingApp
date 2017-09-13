@@ -22,10 +22,14 @@ html
           button.navbar-toggler.navbar-toggler-right(type='button', data-toggle='collapse', data-target='#navbarSupportedContent', aria-controls='navbarSupportedContent', aria-expanded='false', aria-label='Toggle navigation')
             span.navbar-toggler-icon
           |     
-          a.navbar-brand(href='#') WELCOME
-          |     
+          a.navbar-brand(href='/') WELCOME
+      
           #navbarSupportedContent.collapse.navbar-collapse
             ul.navbar-nav.ml-auto.btn-toolbar
+              li
+               a.btn.btn-block.btn-social.btn-twitter(href='/')
+                  span
+                  |  HOME            
               li.nav-item.active
                 a.btn.btn-block.btn-social.btn-twitter(href='/auth/twitter')
                   span.fa.fa-twitter
@@ -35,10 +39,14 @@ html
           button.navbar-toggler.navbar-toggler-right(type='button', data-toggle='collapse', data-target='#navbarSupportedContent', aria-controls='navbarSupportedContent', aria-expanded='false', aria-label='Toggle navigation')
             span.navbar-toggler-icon
           |     
-          a.navbar-brand(href='#') WELCOME  #{name.displayName.toUpperCase()}
+          a.navbar-brand(href='/') WELCOME  #{name.displayName.toUpperCase()}
           |     
           #navbarSupportedContent.collapse.navbar-collapse
             ul.navbar-nav.ml-auto.btn-toolbar
+              li
+               a.btn.btn-block.btn-social.btn-twitter(href='/')
+                  span
+                  |  HOME
               li
                a.btn.btn-block.btn-social.btn-twitter(href='/mypolls')
                   span
