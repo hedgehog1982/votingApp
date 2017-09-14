@@ -39,13 +39,17 @@ body {    /*stop navbar hiding content when its collapsed*/
   background-color: #FFF9E3;
 }
 
-/*deleteDIV{
-
-    width: 100%;
-  position :absolute;
-  bottom : 0;
+#deleteFlex {
+    display: -webkit-flex;
+    display: flex;
+    align-items :flex-end;
 }
 
-#delete{
+
+/*#deleteDIV{
+
+}
+
+/*#delete{
     width: 90%;
 }*/
