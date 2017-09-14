@@ -7,7 +7,7 @@ block content
 
     .container.pt4(id="chartContainer")
         .row
-            .col-sm-12.col-md-12.col-lg-4.pl-4.pt-4(id='formcol' )
+            .col-sm-12.col-md-12.col-lg-4.pl-4.pt-4.pb-4(id='formcol' )
                 div.align-middle.pb-4(id='chartTitle')
                 h3.pt-2(id="vote") "I would like to vote for..."
                 form.pt-2.form-group
@@ -15,8 +15,9 @@ block content
                     div.pb-2
                     input#customT.form-control.pt-2.mb-2(type='text', placeholder='Enter custom options')
                     input#submit.btn.btn-primary.btn-block.pt-2(type='submit', value='Submit')
-                div.pt-4(id="deleteDIV")
-                    div(id="delete")
+                .container#deleteFlex
+                    div.pt-4.pb-3#deleteDIV
+                        div#delete
 
             .col-sm-12.col-md-12.col-lg-8(id="chartCol")
                 #piechart
