@@ -10,11 +10,11 @@ const defaultArray = ["Selection", "People"];  //   <-- do i even need this head
       google.charts.setOnLoadCallback(drawChart);
       
       function addTitle(){
-          $('#chartTitle').append("<h1 class='display-4'>"+ chartTitle + "<h1>");
+          $('#chartTitle').append("<h2 class='display-4'>"+ chartTitle + "<h2>");
       }
       
       function addRemove() {
-          $("#delete").append('<button id="delete" class="btn btn-block btn-danger">DELETE</button>');
+          $("#delete").append('<button id="delete" class="btn btn-block btn-danger pb-3">DELETE</button>');
           
       }
       
