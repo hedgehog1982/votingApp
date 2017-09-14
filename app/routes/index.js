@@ -1,7 +1,6 @@
-'use strict';  //messy messy file should not all be in here.....
+'use strict';  //
 
 var path = process.cwd();
-var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 var mongoose = require('mongoose');
 
 var Twitter = require("node-twitter-api"); //for twitter login
@@ -23,26 +22,22 @@ module.exports = function(app) {
     	consumerSecret: process.env.TWITSECRET,
     	callback: process.env.TWITCALLBACK
     });
-    
 
 	var newrequestSecret;  // secret passsed back from twitter
-	var clickHandler = new ClickHandler();
-	
+
 	function displayIndex(req, res, next){  //not really needing this at mo
 		        next();
 	}
 	
 	function displayChart(req, res, next){
-	    		chartSchema.find( function (err, allCharts) { // search for all charts and just dump it into console log for now (to be reversed and then passed intp pug for display)
+	    		chartSchema.find({}).sort('date').exec( function (err, allCharts) { // search for all charts and just dump it into console log for now (to be reversed and then passed intp pug for display)
                     if (err) return console.error(err);
-                console.log(allCharts.reverse()); //need to reverse date?
+                //console.log(allCharts.reverse()); //need to reverse date? //not getting it in date order !!!!!!
                  res.render('index', {name : req.session.twitUser, charts : allCharts.reverse()});  //throwing an error until charts is populated.
                  next();
                 });       
                 	}
     app.use(bodyParser.json()); //to get data from POST file
-
-    
     app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
         extended: true
     })); 
@@ -63,7 +58,7 @@ module.exports = function(app) {
 		
 	app.route('/newpolls')
 		.get(function (req, res) {
-		    if (req.session.twitUser.id.length !== 0) {
+		    if (req.session.twitUser.id.length !== 0) {  //can access unless logged in
 		        res.render('chartInput', {name : req.session.twitUser} );  //send to be rendered bu pug
 
 		    } else {
@@ -74,7 +69,6 @@ module.exports = function(app) {
 	
 	app.route('/mypolls')
 		.get(function (req, res) {
-		    
 		     if (req.session.twitUser.id.length !== 0) {
 		        res.render('mypolls', {name : req.session.twitUser} );  //send to be rendered bu pug
 		        
@@ -105,19 +99,16 @@ module.exports = function(app) {
             chartDB.makeOne(req, function (data) {
                 res.send(data);
             }); //make a chart
-
         });
     
-    app.route("/updateChart")  //check is logged in!
+    app.route("/updateChart")  
         .post(function(req, res, next){
             chartDB.updateChart(req);
         });
         
-     app.route("/removeone")  //temp so I can clear stuff
+     app.route("/removeone")  //check if user is correct before we remove? 
         	.post(function (req, res) {
-        chartDB.removeOne(req.body)
-        	    //chartDB.removeALL(); //remove all of the DB's
-		//res.send("DELETED"); //redirect back to home page //going to refresh whole page though - more database reads?!
+        chartDB.removeOne(req.body);
 		});
         
     app.route("/remove")  //temp so I can clear stuff
@@ -163,12 +154,11 @@ module.exports = function(app) {
         });
     });
     
-   app.route("/data/chart")  //setup for generic searches now...  // could add a section for which values i want back but opens up to messing
+   app.route("/data/chart")  //setup for generic searches now...  
         .get(function(req, res){  //proper read
         chartDB.findChart(req, function(error, data){  
             if (error){ 
-                console.log("an error! redirecting to error page");
-                res.redirect("/error"); 
+                res.redirect("/error"); //redirect to an error page
             } else {
             console.log("recieved")
              res.send(data);
@@ -179,14 +169,14 @@ module.exports = function(app) {
     
     app.use("/chart", function(req, res, next){  // need a
          var searchTerm = {"_id" : req.path.split("/").pop()};
-         chartSchema.find(searchTerm, function (err, allCharts){  // not using my function ?
+         chartSchema.find(searchTerm, function (err, allCharts){  // not using my function probably should
             if (err) {
-                console.log("/ chart is  an error")
+                console.log("/ chart is an error") // Chart doesnt exist
                 res.redirect("/error"); 
             } else if (allCharts[0] == undefined){  //
-                console.log("/ chart has been removed", err)
+                console.log("/ chart has been removed", err) //chart existed but does no longer
                 res.redirect("/error"); 
-            } else {
+            } else {  //chart exists
                 console.log("/ chart is not an error", allCharts[0]);
               res.render('chartDisplay', {name : req.session.twitUser}); 
             }
@@ -196,7 +186,7 @@ module.exports = function(app) {
     
     app.use("/error", function(req, res, next){  // need an error page here
          console.log(req.path);
-        res.render('error', {name : req.session.twitUser}); 
+        res.render('error', {name : req.session.twitUser}); //display error
     });
          
 };

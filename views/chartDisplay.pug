@@ -5,17 +5,17 @@ block scripts
 
 block content
 
-    .container.pt4(id="chartContainer" )
+    .container.pt4(id="chartContainer")
         .row
             .col-sm-12.col-md-12.col-lg-4.pl-4.pt-4(id='formcol' )
                 div.align-middle.pb-4(id='chartTitle')
                 h3.pt-2(id="vote") "I would like to vote for..."
                 form.pt-2.form-group
                     select.form-control(id='dropD', name='vote')
-                    div
-                    input#customT.form-control(type='text', placeholder='Enter custom options')
-                    input#submit.btn.btn-primary.btn-block(type='submit', value='Submit')
-                div.pt-5(id="deleteDIV")
+                    div.pb-2
+                    input#customT.form-control.pt-2.mb-2(type='text', placeholder='Enter custom options')
+                    input#submit.btn.btn-primary.btn-block.pt-2(type='submit', value='Submit')
+                div.pt-4(id="deleteDIV")
                     div(id="delete")
 
             .col-sm-12.col-md-12.col-lg-8(id="chartCol")

@@ -1,6 +1,6 @@
 var chartSchema = require('../models/users'); // import my mongoose schema
 
-function removeALL(){
+function removeALL(){  //remove this once testing done
     chartSchema.remove({}, function(err) { 
                      if (err) console.log("brokered");
                         console.log('collection removed'); 
@@ -50,25 +50,33 @@ function findChart (req, callback) {  // for get request
 
             chartSchema.find({ [searchKey[0]]: searchQuery } ,"_id title options id ip", function (err, allCharts) { // TEMPORARY would like to use this for all....
                            if (err ) {
-                              console.error("not Found");  //needs a proper error page that is not nice
+                              console.error("no record Found");  //needs a proper error page that is not nice
                                return callback("not Found on Database");  //try to access chart that does not exist
-                           } else if (allCharts[0] == null) {
+                           } else if (allCharts[0] == null) { //no data recieved
                             console.log("no chart Found");
                             return callback("not Found on Database")
                            
                            } else {
                                console.log("recieved ", allCharts[0], " an error of ", err);
                            
-                           if (allCharts[0].ip.indexOf(req.headers['x-forwarded-for']) === -1){
-                               allCharts[0].ip = "Not found";
-                           } else { allCharts[0].ip = "found"; }
                            
-                         if (allCharts[0].id == req.session.twitUser.id){
+                           if (allCharts[0].ip.indexOf(req.headers['x-forwarded-for']) !== -1){  // if ip is not found
+                           console.log("found ip");
+                               allCharts[0].ip = "found";
+                           } else if(allCharts[0].ip.indexOf(req.session.twitUser.id) !== -1){  //if user found
+                           console.log("found user");
+                                allCharts[0].ip = "found";   
+                           } else { allCharts[0].ip = "Not found"; }
+                           
+                         if (allCharts[0].id == req.session.twitUser.id){  //logged in status
                              console.log("it is the same user")
-                             allCharts.push({"found" : true});
+                             allCharts.push({"found" : "ChartOwner"});
+                         } else if (req.session.twitUser.id == ""){
+                              allCharts.push({"found" : "NotLoggedIn"});
                          } else {
-                              allCharts.push({"found" : false});
+                            allCharts.push({"found" : "LoggedIn"}); 
                          }
+                         
                          console.log("I am sending the following" , allCharts);
                         return callback (null, allCharts);  //sending name, options and _id twitter id
                            }
@@ -81,8 +89,9 @@ function updateChart(req){  //if error?
     console.log("recieved update request");
             console.log(req.body);
             var updating =  "options." +req.body.selected ;
-            var ipvalue = req.headers['x-forwarded-for'];  //store ip
+            var ipvalue = [req.headers['x-forwarded-for']];  //store ip for ever submit
             console.log("value to push is ", ipvalue);
+            
             
             chartSchema.update(  //increment
                 {_id : req.body._id}, 
@@ -97,12 +106,25 @@ function updateChart(req){  //if error?
             chartSchema.update(  //add ip (cant do this in one go as gets grumpy)
                 {_id : req.body._id}, 
                     {$push : {
-                            ip: [ipvalue]
+                            ip: ipvalue
                             }    
                     }
                     , function(err, doc){
                         if(err){ console.log("Something wrong when updating data!", err ,doc); }
             });
+            
+             if (req.session.twitUser.id !==""){  //store user if logged in
+                            chartSchema.update(  //add ip (cant do this in one go as gets grumpy)
+                                 {_id : req.body._id}, 
+                                    {$push : {
+                                       ip: req.session.twitUser.id
+                                        }    
+                                }
+                             , function(err, doc){
+                             if(err){ console.log("Something wrong when updating data!", err ,doc); }
+                });
+
+            }
 }
 
 module.exports = {removeALL : removeALL, makeOne : makeOne, findChart : findChart, updateChart : updateChart, removeOne: removeOne};  //export removeALL and make one  function

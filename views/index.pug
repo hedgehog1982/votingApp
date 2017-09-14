@@ -1,12 +1,12 @@
 extends layout.pug
 
 block content
-    .container
+    .container.pb-3(id="chartContainer" )
     
         h1 Below are the polls
         
         ul
-        each val, index in charts
-            a(href= "https://voting-app-waynewilliamson.c9users.io/chart/" + val._id ) 
-                li.list-group-item= val.title 
+            each val, index in charts
+                a(href= "https://voting-app-waynewilliamson.c9users.io/chart/" + val._id ) 
+                    li.mb-2.list-group-item= val.title 
 
