@@ -70,7 +70,7 @@
                     chartKey : uniqueItems           //object of 
                     }
               ).done(function( data ) {
-                    window.location.replace("https://voting-app-waynewilliamson.c9users.io/chart/" + data);  //redirect to newly created chart
+                    window.location.replace("https://secure-basin-74681.herokuapp.com/chart/" + data);  //redirect to newly created chart
                 });
               }
                 

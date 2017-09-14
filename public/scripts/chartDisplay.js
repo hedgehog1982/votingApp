@@ -71,7 +71,7 @@ const defaultArray = ["Selection", "People"];  //   <-- do i even need this head
     var chartNumber = window.location.pathname.split("/chart/").pop();
     var getData = { "_id" : chartNumber };
 
-    $.get("https://voting-app-waynewilliamson.c9users.io/data/chart/", getData, function( data ) {
+    $.get("https://secure-basin-74681.herokuapp.com/data/chart/", getData, function( data ) {
             console.log(data);
             chartData = data[0];
             chartKeys = Object.keys(chartData.options).map(function (key){ //converyy object to arra
@@ -132,7 +132,7 @@ const defaultArray = ["Selection", "People"];  //   <-- do i even need this head
                 });
                     
         window.alert("The Chart has now been Deleted")  //need an are you sure? 
-        window.location.replace("https://voting-app-waynewilliamson.c9users.io/");
+        window.location.replace("https://secure-basin-74681.herokuapp.com/");
                     
      });
      

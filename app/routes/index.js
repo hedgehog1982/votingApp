@@ -32,7 +32,6 @@ module.exports = function(app) {
 	function displayChart(req, res, next){
 	    		chartSchema.find({}).sort('date').exec( function (err, allCharts) { // search for all charts and just dump it into console log for now (to be reversed and then passed intp pug for display)
                     if (err) return console.error(err);
-                //console.log(allCharts.reverse()); //need to reverse date? //not getting it in date order !!!!!!
                  res.render('index', {name : req.session.twitUser, charts : allCharts.reverse()});  //throwing an error until charts is populated.
                  next();
                 });       
@@ -41,6 +40,7 @@ module.exports = function(app) {
     app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
         extended: true
     })); 
+    
 
 	app.use(function(req, res, next){  //needed to have individual users.
             if (req.session.twitUser === undefined){  //if no stored session data
