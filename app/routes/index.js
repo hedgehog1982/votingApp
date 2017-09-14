@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 
 var Twitter = require("node-twitter-api"); //for twitter login
 
-var homepage = "https://voting-app-waynewilliamson.c9users.io/";
+var homepage = "https://secure-basin-74681.herokuapp.com/";
 
 var chartSchema = require('../models/users'); // import my mongoose schema
 
