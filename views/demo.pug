@@ -1,0 +1,27 @@
+extends layout.pug
+block scripts
+
+    script(src='/public/scripts/demo.js')
+
+block content
+
+    .container(id="chartContainer")
+        .row
+            .col-sm-12.col-md-12.col-lg-4
+                form.pt-4(method="post", id='form', action='/makeChart')
+                | Please Enter Your Chart Title:
+                br
+                input.form-control(type='text', name='chartTitle', placeholder='Enter a title', id='chartTitle', pattern='[a-zA-z0-9]{3}', required='')
+                br
+                |   Please Enter Field Names seperated with a new line, Enter at least Two
+                br
+                textarea.form-control(type='text', name='pieSections', id="pieSections",  size='500', placeholder="Enter at least 2 Values seperated by new lines",  rows='8', pattern='([a-zA-z](\n)[a-zA-Z])', required='') 
+                br
+                br
+                input.btn.btn-primary.btn-block(id="submit" type='submit', value='Submit')
+            .col-sm-12.col-md-12.col-lg-8
+                #piechart
+    
+
+        
+

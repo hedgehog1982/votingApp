@@ -106,6 +106,7 @@ module.exports = function(app) {
             chartDB.updateChart(req);
         });
         
+        
      app.route("/removeone")  //check if user is correct before we remove? 
         	.post(function (req, res) {
         chartDB.removeOne(req.body);
@@ -182,6 +183,11 @@ module.exports = function(app) {
             }
         })
 
+    });
+    
+    app.use("/demo", function(req, res, next){  // need an error page here
+         console.log(req.path);
+        res.render('demo', {name : req.session.twitUser}); //display error
     });
     
     app.use("/error", function(req, res, next){  // need an error page here
